@@ -1,0 +1,44 @@
+version: "2"
+  mqtt2graphite:
+    image: genunix/mqtt2graphite
+    restart: always
+    volumes:
+      - /srv/mqtt/mqtt2graphite.map:/usr/src/app/map:ro
+    links:
+      - graphite
+      - mqtt
+
+  graphite:
+    image: hopsoft/graphite-statsd:v0.9.15-phusion0.9.18
+    ports:
+      - 8081:80
+      - 2003:2003
+      - 2004:2004
+      - 2023:2023
+      - 2024:2024
+      - 8125:8125/udp
+      - 8126:8126
+    restart: always
+    volumes:
+      - /srv/graphite/conf:/opt/graphite/conf
+      - /srv/graphite/data:/opt/graphite/storage
+
+  grafana:
+    image: grafana/grafana:3.1.1-1470047149
+    ports:
+      - 3000:3000
+    restart: always
+    volumes:
+      - /srv/grafana/data:/var/lib/grafana
+    links:
+      - graphite
+
+  mqtt:
+    image: toke/mosquitto
+    ports:
+      - 9001:9001
+      - 1883:1883
+    restart: always
+    volumes:
+      - /srv/mqtt/data:/mqtt/data
+      - /srv/mqtt/config:/mqtt/config:ro
